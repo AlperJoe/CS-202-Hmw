@@ -1,0 +1,123 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 05/16/2023 12:18:03 PM
+// Design Name: 
+// Module Name: tls
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+
+module tls( input logic clk, input logic reset, input logic sa, sb, output logic la0,la1,la2,lb0, lb1,lb2);
+    typedef enum logic [2:0] {S0, S1, S2, S3, S4, S5, S6, S7} statetype;
+    statetype state, nextstate;
+    
+    // state register
+    always_ff @(posedge clk, posedge reset)
+    if (reset) state <= S0;
+    else state <= nextstate;
+    
+    // next state logic
+    always_comb
+        case (state)
+            S0: if (~sb) nextstate = S0;
+                else nextstate = S1;
+            S1: nextstate = S2;
+            S2: nextstate = S3;
+            S3: nextstate = S4;
+            S4: if (sb & ~ sa)) nextstate = S4;
+                else nextstate = S5;
+            S5: nextstate = S6;
+            S6: nextstate = S7;
+            S7: nextstate = S0;
+            default: nextstate = S0;
+    endcase
+    
+    // output logic
+    logic xx; 
+    xor(xx, state[1], state[2]);
+    
+    assign la2 = (state[1] & ~state[0]) | xx ;
+    assign la1 = ~state[0] | xx;
+    assign la0 = 1;
+    
+    assign lb2 = (~state[2] & ~state[0])| ~xx;
+    assign lb1 = ~state[0] | ~xx ;
+    assign lb0 = 1;
+endmodule
+
+module counter( input clk, input reset, output logic clock);
+    localparam target = 150000000;
+    
+    logic [31:0] no;
+ 
+    always @ (posedge(clk), posedge(reset))
+    begin
+        if (reset == 1'b1)
+            no <= 32'b0;
+        else if (count == target - 1)
+            no <= 32'b0;
+        else
+           no <= count + 1;
+     end
+
+    always @ (posedge(clk), posedge(reset))
+    begin
+        if (reset == 1'b1)
+            clock <= 1'b0;
+        else if (count == target - 1)
+            clock <= ~clock;
+        else
+            clock <= clock;
+    end
+endmodule
+
+module fsm(input logic clk, reset, sa, sb, output logic la0,la1,la2,lb0,lb1,lb2);
+    logic clock;
+    
+    counter clckdv(clk, reset, clock);
+    
+    tls fsm(clock, reset, sa, sb, la0,la1,la2,lb0,lb1,lb2);
+    
+endmodule
+
+
+
+module tls_testbench();
+    logic clk, reset, sa, sb;
+    logic la0,la1,la2,lb0,lb1,lb2;
+
+    // instantiate device under test
+    tls dut(clk, reset, sa, sb, la0,la1,la2,lb0,lb1,lb2);
+
+   
+    initial begin
+        reset = 1; sa = 0; sb = 0; #10;
+        reset = 0; #10;
+        sa = 1; #100;
+        sb = 1; #130;
+        sa = 0; #250;
+        sa = 0; sb = 0; #100;
+    end
+
+    always
+        begin
+            clk = 1; #10; 
+            clk = 0; #10;
+        end
+        
+
+
+

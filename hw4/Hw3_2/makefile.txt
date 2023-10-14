@@ -1,0 +1,19 @@
+
+Hw3_2 : SimulationMgr.o Food.o Creature.o Heap.o PriorityQueue.o
+	g++ SimulationMgr.o Food.o Creature.o Heap.o PriorityQueue.o -o Hw3_2
+
+Food.o : Food.cpp
+	g++ -c Food.cpp
+
+Creature.o : Creature.cpp
+	g++ -c Creature.cpp
+
+PriorityQueue.o : PriorityQueue.cpp
+	g++ -c PriorityQueue.cpp
+
+Heap.p : Heap.cpp
+	g++ -c Heap.cpp
+
+SimulationMgr.o : SimulationMgr.cpp
+	g++ -c SimulationMgr.cpp
+
